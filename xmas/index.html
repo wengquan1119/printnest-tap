@@ -61,17 +61,15 @@
     <div class="no" id="no"></div>
     <div class="zh" id="zh"></div>
     <div class="en" id="en"></div>
-    <div class="come">明天再碰一次挂饰，有新的祝福 · Tap your ornament again tomorrow for a new one</div>
+    <div class="come">每天碰一次挂饰，都有新的祝福 · Tap your ornament every day for a new wish</div>
   </div>
   <div class="btns" id="btns" style="display:none">
     <button class="share" id="share">分享 Share</button>
-    <a class="shop" id="shop" href="#shop">我也要一个 Get one</a>
+    <button class="shop" id="more">再来一个 One more</button>
   </div>
-  <footer>PrintNest · 3D printed in Malaysia</footer>
+  <footer>© 2026 PrintNest · 3D printed in Malaysia</footer>
 </main>
 <script>
-// ---- settings: change SHOP to your Shopee link
-const SHOP = '#shop';
 const WISHES = [
  ['愿你今年收到的礼物，都刚好是你想要的。','May every gift this year be exactly what you hoped for.'],
  ['今天适合吃多一块蛋糕，不用内疚。','Today is a good day for one more slice of cake. No guilt.'],
@@ -107,7 +105,6 @@ const WISHES = [
 const q = new URLSearchParams(location.search);
 const name = (q.get('n') || q.get('to') || '').slice(0, 20);
 if (name) document.getElementById('for').textContent = 'For ' + name + ' 🎄 送给 ' + name;
-document.getElementById('shop').href = SHOP;
 
 // ---- countdown: Christmas, then New Year 2027, then CNY 2027
 const now = new Date();
@@ -134,15 +131,25 @@ tick(); setInterval(tick, 1000);
 // ---- today's wish: same wish all day for this name, new one tomorrow
 function hash(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
 const dayKey = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate();
-const idx = hash(dayKey + '|' + name) % WISHES.length;
+let idx = hash(dayKey + '|' + name) % WISHES.length;
+const seen = new Set([idx]);
+function showWish() {
+  document.getElementById('no').textContent = 'WISH No.' + String(idx + 1).padStart(2, '0');
+  document.getElementById('zh').textContent = WISHES[idx][0];
+  document.getElementById('en').textContent = WISHES[idx][1];
+}
+document.getElementById('more').addEventListener('click', () => {
+  if (seen.size >= WISHES.length) seen.clear();
+  do { idx = Math.floor(Math.random() * WISHES.length); } while (seen.has(idx));
+  seen.add(idx); showWish();
+  const c = document.getElementById('card'); c.style.animation = 'none'; void c.offsetWidth; c.style.animation = '';
+});
 const gift = document.getElementById('gift');
 gift.addEventListener('click', () => {
   if (gift.classList.contains('open')) return;
   gift.classList.remove('wobble'); gift.classList.add('open');
   setTimeout(() => {
-    document.getElementById('no').textContent = 'WISH No.' + String(idx + 1).padStart(2, '0');
-    document.getElementById('zh').textContent = WISHES[idx][0];
-    document.getElementById('en').textContent = WISHES[idx][1];
+    showWish();
     document.getElementById('card').style.display = 'block';
     document.getElementById('btns').style.display = 'flex';
     document.getElementById('hint').style.display = 'none';
